@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template
 import requests
+import numpy as np
 
 app = Flask(__name__)
 
@@ -18,6 +19,9 @@ parameters = {
   'symbol':'BTC',
   'convert':'USDT'
 }
+
+# Initialize a list to store the last 24 hours of price data
+historical_price = []
 
 @app.route("/")
 def index():
@@ -51,8 +55,18 @@ def btc_data():
     percent_change_24h = data['data']['BTC']['quote']['USDT']['percent_change_24h']
     market_cap = data['data']['BTC']['quote']['USDT']['market_cap']
 
+    # Add the new price to the list of price data
+    historical_price.append(price)
+
+    # If we have more than 24 hours (1440*12 5 seconds) of data, remove the oldest price
+    if len(historical_price) > 1440*12:
+        historical_price.pop(0)
+
+    # Calculate 24 hour volatility 
+    volatility = np.std(np.array(historical_price)) if len(historical_price) > 1 else 0
+
     # Return the extracted data as JSON
-    return jsonify(price=price, volume_24h=volume_24h, percent_change_24h=percent_change_24h, market_cap=market_cap)
+    return jsonify(price=price, volume_24h=volume_24h, percent_change_24h=percent_change_24h, market_cap=market_cap, volatility=volatility)
 
 if __name__ == "__main__":
     app.run(debug=True)
