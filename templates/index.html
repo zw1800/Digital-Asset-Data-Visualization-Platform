@@ -12,6 +12,7 @@
         <div id="volume-graph"></div>
         <div id="change-graph"></div>
         <div id="cap-graph"></div>
+        <div id="volatility-graph"></div>
 
         <script>
             // Initialize empty arrays to store data
@@ -19,6 +20,7 @@
             var volumeData = [];
             var changeData = [];
             var capData = [];
+            var volatilityData = [];
 
             // Define traces for each graph
             var tracePrice = {
@@ -37,10 +39,14 @@
                 y: capData,
                 type: 'scatter'
             };
+            var traceVolatility = {
+                y: volatilityData,
+                type: 'scatter'
+            };
 
             // Define layout for each graph
             var layoutPrice = {
-                title: 'BTC-USDT Spot Close Price - Granularity: 1 Minute'
+                title: 'BTC-USDT Spot Close Price - Granularity: 5 seconds'
             };
             var layoutVolume = {
                 title: '24 Hour Trading Volume'
@@ -51,6 +57,9 @@
             var layoutCap = {
                 title: 'Market Cap'
             };
+            var layoutVolatility = {
+                title:'24 Hour Volatility (Standard Deviation of Price)'
+            };
 
             // Define configuration options for Plotly
             var config = { responsive: true };
@@ -60,6 +69,7 @@
             Plotly.newPlot('volume-graph', [traceVolume], layoutVolume, config);
             Plotly.newPlot('change-graph', [traceChange], layoutChange, config);
             Plotly.newPlot('cap-graph', [traceCap], layoutCap, config);
+            Plotly.newPlot('volatility-graph', [traceVolatility], layoutVolatility, config);
 
             // Function to update the graphs with data from the server
             function updateGraphs() {
@@ -71,25 +81,28 @@
                     volumeData.push(data['volume_24h']);
                     changeData.push(data['percent_change_24h']);
                     capData.push(data['market_cap']);
+                    volatilityData.push(data['volatility']);
 
                     // Update the graphs with the new data
                     Plotly.update('price-graph', { y: [priceData] });
                     Plotly.update('volume-graph', { y: [volumeData] });
                     Plotly.update('change-graph', { y: [changeData] });
                     Plotly.update('cap-graph', { y: [capData] });
+                    Plotly.update('volatility-graph', {y: [volatilityData]});
 
                     // Remove oldest data points if the arrays exceed a certain length
-                    if (priceData.length > 1440) {
+                    if (priceData.length > 1440*12) {
                         priceData.shift();
                         volumeData.shift();
                         changeData.shift();
                         capData.shift();
+                        volatilityData.shift();
                     }
                 });
             }
 
             // Call the updateGraphs function at regular intervals
-            setInterval(updateGraphs, 600);  // Interval set to 600 milliseconds (0.6 seconds)
+            setInterval(updateGraphs, 5000);  // Interval set to 5000 milliseconds (5 seconds)
         </script>
     </body>
 </html>
