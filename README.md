@@ -6,7 +6,7 @@ Getting price data at the granularity of seconds is not applicable from a free A
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+Download the zip file and install required python packages.
 
 
 ### Configuration
