@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>BTC-USDT Live Data</title>
+        <!-- Include necessary JavaScript libraries -->
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    </head>
+    <body>
+        <!-- Create div elements for the graphs -->
+        <div id="price-graph"></div>
+        <div id="volume-graph"></div>
+        <div id="change-graph"></div>
+        <div id="cap-graph"></div>
+
+        <script>
+            // Initialize empty arrays to store data
+            var priceData = [];
+            var volumeData = [];
+            var changeData = [];
+            var capData = [];
+
+            // Define traces for each graph
+            var tracePrice = {
+                y: priceData,
+                type: 'scatter'
+            };
+            var traceVolume = {
+                y: volumeData,
+                type: 'scatter'
+            };
+            var traceChange = {
+                y: changeData,
+                type: 'scatter'
+            };
+            var traceCap = {
+                y: capData,
+                type: 'scatter'
+            };
+
+            // Define layout for each graph
+            var layoutPrice = {
+                title: 'BTC-USDT Spot Close Price - Granularity: 1 Minute'
+            };
+            var layoutVolume = {
+                title: '24 Hour Trading Volume'
+            };
+            var layoutChange = {
+                title: '24 Hour Price Change'
+            };
+            var layoutCap = {
+                title: 'Market Cap'
+            };
+
+            // Define configuration options for Plotly
+            var config = { responsive: true };
+
+            // Create the initial graphs with empty data
+            Plotly.newPlot('price-graph', [tracePrice], layoutPrice, config);
+            Plotly.newPlot('volume-graph', [traceVolume], layoutVolume, config);
+            Plotly.newPlot('change-graph', [traceChange], layoutChange, config);
+            Plotly.newPlot('cap-graph', [traceCap], layoutCap, config);
+
+            // Function to update the graphs with data from the server
+            function updateGraphs() {
+                // Send a GET request to the server to retrieve BTC data
+                $.getJSON('/btc_data', function(data) {
+                    // Extract the data values from the response
+                    var price = data['price'];
+                    priceData.push(price);
+                    volumeData.push(data['volume_24h']);
+                    changeData.push(data['percent_change_24h']);
+                    capData.push(data['market_cap']);
+
+                    // Update the graphs with the new data
+                    Plotly.update('price-graph', { y: [priceData] });
+                    Plotly.update('volume-graph', { y: [volumeData] });
+                    Plotly.update('change-graph', { y: [changeData] });
+                    Plotly.update('cap-graph', { y: [capData] });
+
+                    // Remove oldest data points if the arrays exceed a certain length
+                    if (priceData.length > 1440) {
+                        priceData.shift();
+                        volumeData.shift();
+                        changeData.shift();
+                        capData.shift();
+                    }
+                });
+            }
+
+            // Call the updateGraphs function at regular intervals
+            setInterval(updateGraphs, 600);  // Interval set to 600 milliseconds (0.6 seconds)
+        </script>
+    </body>
+</html>
